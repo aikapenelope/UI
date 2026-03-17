@@ -790,33 +790,177 @@ export interface WorkflowRunSchema {
 }
 
 // ---------------------------------------------------------------------------
+// Shared model response (used by agents, teams, memory, reasoning, etc.)
+// ---------------------------------------------------------------------------
+
+export interface ModelResponse {
+  name?: string | null
+  model?: string | null
+  provider?: string | null
+}
+
+// ---------------------------------------------------------------------------
+// Agent tool metadata (from format_tools helper)
+// ---------------------------------------------------------------------------
+
+export interface AgentToolInfo {
+  name: string
+  description?: string | null
+  parameters?: Record<string, unknown> | null
+  requires_confirmation?: boolean | null
+  external_execution?: boolean | null
+}
+
+// ---------------------------------------------------------------------------
+// Agent sub-config sections (mirrors AgentResponse.from_agent output)
+// ---------------------------------------------------------------------------
+
+export interface AgentToolsConfig {
+  tools?: AgentToolInfo[] | null
+  tool_call_limit?: number | null
+  tool_choice?: string | null
+}
+
+export interface AgentSessionsConfig {
+  session_table?: string | null
+  add_history_to_context?: boolean
+  enable_session_summaries?: boolean
+  num_history_runs?: number
+  search_past_sessions?: boolean
+  num_past_sessions_to_search?: number | null
+  num_past_session_runs_in_search?: number | null
+  cache_session?: boolean
+}
+
+export interface AgentKnowledgeConfig {
+  db_id?: string | null
+  knowledge_table?: string | null
+  enable_agentic_knowledge_filters?: boolean
+  knowledge_filters?: Record<string, unknown>[] | null
+  references_format?: string | null
+}
+
+export interface AgentMemoryConfig {
+  enable_agentic_memory?: boolean
+  update_memory_on_run?: boolean
+  enable_user_memories?: boolean
+  metadata?: Record<string, unknown> | null
+  memory_table?: string | null
+  model?: ModelResponse | null
+}
+
+export interface AgentReasoningConfig {
+  reasoning?: boolean
+  reasoning_agent_id?: string | null
+  reasoning_model?: ModelResponse | null
+  reasoning_min_steps?: number
+  reasoning_max_steps?: number
+}
+
+export interface AgentDefaultToolsConfig {
+  read_chat_history?: boolean
+  search_knowledge?: boolean
+  update_knowledge?: boolean
+  read_tool_call_history?: boolean
+}
+
+export interface AgentSystemMessageConfig {
+  system_message?: string | null
+  system_message_role?: string
+  build_context?: boolean
+  description?: string | null
+  instructions?: string | string[] | null
+  expected_output?: string | null
+  additional_context?: string | null
+  markdown?: boolean
+  add_name_to_context?: boolean
+  add_datetime_to_context?: boolean
+  add_location_to_context?: boolean
+  timezone_identifier?: string | null
+  resolve_in_context?: boolean
+}
+
+export interface AgentExtraMessagesConfig {
+  additional_input?: Record<string, unknown>[] | null
+  user_message_role?: string
+  build_user_context?: boolean
+}
+
+export interface AgentResponseSettingsConfig {
+  retries?: number
+  delay_between_retries?: number
+  exponential_backoff?: boolean
+  output_schema_name?: string | null
+  parser_model_prompt?: string | null
+  parse_response?: boolean
+  structured_outputs?: boolean
+  use_json_mode?: boolean
+  save_response_to_file?: string | null
+  parser_model?: ModelResponse | null
+}
+
+export interface AgentStreamingConfig {
+  stream?: boolean
+  stream_events?: boolean
+}
+
+// ---------------------------------------------------------------------------
 // Agents (response from GET /agents, GET /agents/{id})
 // ---------------------------------------------------------------------------
 
 export interface AgentResponse {
-  id: string
+  id?: string | null
   name?: string | null
-  description?: string | null
   db_id?: string | null
-  model?: {
-    id?: string | null
-    provider?: string | null
-  } | null
-  config?: Record<string, unknown> | null
+  description?: string | null
+  role?: string | null
+  model?: ModelResponse | null
+  tools?: AgentToolsConfig | null
+  sessions?: AgentSessionsConfig | null
+  knowledge?: AgentKnowledgeConfig | null
+  memory?: AgentMemoryConfig | null
+  reasoning?: AgentReasoningConfig | null
+  default_tools?: AgentDefaultToolsConfig | null
+  system_message?: AgentSystemMessageConfig | null
+  extra_messages?: AgentExtraMessagesConfig | null
+  response_settings?: AgentResponseSettingsConfig | null
+  introduction?: string | null
+  streaming?: AgentStreamingConfig | null
+  metadata?: Record<string, unknown> | null
+  input_schema?: Record<string, unknown> | null
+  is_component?: boolean
+  current_version?: number | null
+  stage?: string | null
 }
 
+// ---------------------------------------------------------------------------
+// Teams (response from GET /teams, GET /teams/{id})
+// ---------------------------------------------------------------------------
+
 export interface TeamResponse {
-  id: string
+  id?: string | null
   name?: string | null
-  description?: string | null
   db_id?: string | null
+  description?: string | null
+  role?: string | null
   mode?: string | null
-  model?: {
-    id?: string | null
-    provider?: string | null
-  } | null
-  members?: Record<string, unknown>[] | null
-  config?: Record<string, unknown> | null
+  model?: ModelResponse | null
+  tools?: AgentToolsConfig | null
+  sessions?: AgentSessionsConfig | null
+  knowledge?: AgentKnowledgeConfig | null
+  memory?: AgentMemoryConfig | null
+  reasoning?: AgentReasoningConfig | null
+  default_tools?: AgentDefaultToolsConfig | null
+  system_message?: AgentSystemMessageConfig | null
+  response_settings?: AgentResponseSettingsConfig | null
+  introduction?: string | null
+  streaming?: AgentStreamingConfig | null
+  members?: (AgentResponse | TeamResponse)[] | null
+  metadata?: Record<string, unknown> | null
+  input_schema?: Record<string, unknown> | null
+  is_component?: boolean
+  current_version?: number | null
+  stage?: string | null
 }
 
 // ---------------------------------------------------------------------------
@@ -824,15 +968,19 @@ export interface TeamResponse {
 // ---------------------------------------------------------------------------
 
 export interface WorkflowDetailResponse {
-  id: string
+  id?: string | null
   name?: string | null
-  description?: string | null
   db_id?: string | null
+  description?: string | null
+  input_schema?: Record<string, unknown> | null
+  steps?: Record<string, unknown>[] | null
+  agent?: AgentResponse | null
+  team?: TeamResponse | null
+  metadata?: Record<string, unknown> | null
+  workflow_agent?: boolean
   is_component?: boolean
   current_version?: number | null
   stage?: string | null
-  input_schema?: Record<string, unknown> | null
-  steps?: Record<string, unknown>[] | null
 }
 
 // ---------------------------------------------------------------------------

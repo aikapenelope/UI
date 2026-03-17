@@ -189,8 +189,9 @@ export const APIRoutes = {
   ListRegistry: (base: string) => u(base, '/registry'),
 
   // -- Database Migrations -------------------------------------------------
-  DatabaseMigrate: (base: string) => u(base, '/databases/migrate'),
-  DatabaseMigrateCheck: (base: string) => u(base, '/databases/migrate/check'),
+  DatabaseMigrateAll: (base: string) => u(base, '/databases/all/migrate'),
+  DatabaseMigrate: (base: string, dbId: string) =>
+    u(base, `/databases/${dbId}/migrate`),
 
   // -- Status (legacy alias) -----------------------------------------------
   Status: (base: string) => u(base, '/health')

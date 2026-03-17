@@ -211,21 +211,108 @@ export interface ChatMessage {
   response_audio?: ResponseAudio
 }
 
+export interface AgentToolEntry {
+  name: string
+  description?: string | null
+  parameters?: Record<string, unknown> | null
+  requires_confirmation?: boolean | null
+  external_execution?: boolean | null
+}
+
 export interface AgentDetails {
   id: string
   name?: string
   db_id?: string
-  // Model
+  description?: string | null
+  role?: string | null
   model?: Model
+  // Tools
+  tools?: {
+    tools?: AgentToolEntry[] | null
+    tool_call_limit?: number | null
+    tool_choice?: string | null
+  } | null
+  // Knowledge
+  knowledge?: {
+    db_id?: string | null
+    knowledge_table?: string | null
+    enable_agentic_knowledge_filters?: boolean
+    knowledge_filters?: Record<string, unknown>[] | null
+    references_format?: string | null
+  } | null
+  // Memory
+  memory?: {
+    enable_agentic_memory?: boolean
+    update_memory_on_run?: boolean
+    enable_user_memories?: boolean
+    memory_table?: string | null
+    model?: Model | null
+  } | null
+  // Reasoning
+  reasoning?: {
+    reasoning?: boolean
+    reasoning_agent_id?: string | null
+    reasoning_min_steps?: number
+    reasoning_max_steps?: number
+  } | null
+  // Sessions
+  sessions?: {
+    session_table?: string | null
+    add_history_to_context?: boolean
+    enable_session_summaries?: boolean
+    num_history_runs?: number
+  } | null
+  // Default tools
+  default_tools?: {
+    read_chat_history?: boolean
+    search_knowledge?: boolean
+    update_knowledge?: boolean
+    read_tool_call_history?: boolean
+  } | null
+  introduction?: string | null
+  metadata?: Record<string, unknown> | null
+  is_component?: boolean
+  current_version?: number | null
+  stage?: string | null
 }
 
 export interface TeamDetails {
   id: string
   name?: string
   db_id?: string
-
-  // Model
+  description?: string | null
+  role?: string | null
+  mode?: string | null
   model?: Model
+  // Tools
+  tools?: {
+    tools?: AgentToolEntry[] | null
+    tool_call_limit?: number | null
+    tool_choice?: string | null
+  } | null
+  // Knowledge
+  knowledge?: {
+    db_id?: string | null
+    knowledge_table?: string | null
+    enable_agentic_knowledge_filters?: boolean
+  } | null
+  // Memory
+  memory?: {
+    enable_agentic_memory?: boolean
+    update_memory_on_run?: boolean
+  } | null
+  // Reasoning
+  reasoning?: {
+    reasoning?: boolean
+    reasoning_agent_id?: string | null
+  } | null
+  // Members (recursive agents/teams)
+  members?: (AgentDetails | TeamDetails)[] | null
+  introduction?: string | null
+  metadata?: Record<string, unknown> | null
+  is_component?: boolean
+  current_version?: number | null
+  stage?: string | null
 }
 
 export interface ImageData {

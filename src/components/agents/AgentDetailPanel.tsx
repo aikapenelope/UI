@@ -1,0 +1,292 @@
+'use client'
+
+import { Badge } from '@/components/ui/badge'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger
+} from '@/components/ui/collapsible'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Separator } from '@/components/ui/separator'
+import type { AgentDetails } from '@/types/os'
+import {
+  Brain,
+  BookOpen,
+  ChevronRight,
+  Cpu,
+  Lightbulb,
+  Settings2,
+  Wrench
+} from 'lucide-react'
+import { useState } from 'react'
+
+// ---------------------------------------------------------------------------
+// Collapsible section wrapper
+// ---------------------------------------------------------------------------
+
+function Section({
+  icon,
+  title,
+  badge,
+  children,
+  defaultOpen = false
+}: {
+  icon: React.ReactNode
+  title: string
+  badge?: string
+  children: React.ReactNode
+  defaultOpen?: boolean
+}) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <CollapsibleTrigger className="text-muted-foreground flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs font-medium hover:bg-accent hover:text-primary">
+        <ChevronRight
+          size={12}
+          className={`shrink-0 transition-transform ${open ? 'rotate-90' : ''}`}
+        />
+        {icon}
+        <span className="flex-1 text-left">{title}</span>
+        {badge && (
+          <Badge
+            variant="secondary"
+            className="h-4 px-1.5 text-[10px] font-normal"
+          >
+            {badge}
+          </Badge>
+        )}
+      </CollapsibleTrigger>
+      <CollapsibleContent className="pl-6 pr-1 pt-1">
+        {children}
+      </CollapsibleContent>
+    </Collapsible>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Key-value row
+// ---------------------------------------------------------------------------
+
+function KV({ label, value }: { label: string; value: React.ReactNode }) {
+  if (value === null || value === undefined) return null
+  return (
+    <div className="flex items-start justify-between gap-2 py-0.5 text-[11px]">
+      <span className="text-muted-foreground shrink-0">{label}</span>
+      <span className="text-right text-primary">{String(value)}</span>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// AgentDetailPanel
+// ---------------------------------------------------------------------------
+
+export default function AgentDetailPanel({ agent }: { agent: AgentDetails }) {
+  const toolsList = agent.tools?.tools ?? []
+  const hasKnowledge = !!agent.knowledge
+  const hasMemory = !!agent.memory
+  const hasReasoning = agent.reasoning?.reasoning === true
+
+  return (
+    <ScrollArea className="h-full">
+      <div className="flex flex-col gap-1 p-2">
+        {/* Header */}
+        <div className="px-2 pb-1">
+          <h3 className="text-sm font-semibold text-primary">
+            {agent.name || agent.id}
+          </h3>
+          {agent.description && (
+            <p className="text-muted-foreground mt-0.5 text-[11px]">
+              {agent.description}
+            </p>
+          )}
+          {agent.role && (
+            <p className="text-muted-foreground mt-0.5 text-[11px] italic">
+              Role: {agent.role}
+            </p>
+          )}
+        </div>
+
+        {/* Capability badges */}
+        <div className="flex flex-wrap gap-1 px-2 pb-1">
+          {toolsList.length > 0 && (
+            <Badge variant="outline" className="gap-1 text-[10px] font-normal">
+              <Wrench size={10} />
+              {toolsList.length} tool{toolsList.length !== 1 ? 's' : ''}
+            </Badge>
+          )}
+          {hasKnowledge && (
+            <Badge variant="outline" className="gap-1 text-[10px] font-normal">
+              <BookOpen size={10} />
+              Knowledge
+            </Badge>
+          )}
+          {hasMemory && (
+            <Badge variant="outline" className="gap-1 text-[10px] font-normal">
+              <Brain size={10} />
+              Memory
+            </Badge>
+          )}
+          {hasReasoning && (
+            <Badge variant="outline" className="gap-1 text-[10px] font-normal">
+              <Lightbulb size={10} />
+              Reasoning
+            </Badge>
+          )}
+        </div>
+
+        <Separator className="my-1" />
+
+        {/* Model */}
+        {agent.model && (
+          <Section icon={<Cpu size={12} />} title="Model" defaultOpen>
+            <KV label="Provider" value={agent.model.provider} />
+            <KV label="Model" value={agent.model.model} />
+            <KV label="Name" value={agent.model.name} />
+          </Section>
+        )}
+
+        {/* Tools */}
+        {toolsList.length > 0 && (
+          <Section
+            icon={<Wrench size={12} />}
+            title="Tools"
+            badge={String(toolsList.length)}
+            defaultOpen
+          >
+            <div className="flex flex-col gap-1">
+              {toolsList.map((t) => (
+                <div
+                  key={t.name}
+                  className="rounded border border-border px-2 py-1"
+                >
+                  <span className="text-[11px] font-medium text-primary">
+                    {t.name}
+                  </span>
+                  {t.description && (
+                    <p className="text-muted-foreground text-[10px]">
+                      {t.description}
+                    </p>
+                  )}
+                  {t.requires_confirmation && (
+                    <Badge variant="secondary" className="mt-0.5 text-[9px]">
+                      requires confirmation
+                    </Badge>
+                  )}
+                </div>
+              ))}
+            </div>
+            <KV label="Call limit" value={agent.tools?.tool_call_limit} />
+            <KV label="Tool choice" value={agent.tools?.tool_choice} />
+          </Section>
+        )}
+
+        {/* Knowledge */}
+        {hasKnowledge && (
+          <Section icon={<BookOpen size={12} />} title="Knowledge">
+            <KV label="DB ID" value={agent.knowledge?.db_id} />
+            <KV label="Table" value={agent.knowledge?.knowledge_table} />
+            <KV
+              label="Agentic filters"
+              value={String(
+                agent.knowledge?.enable_agentic_knowledge_filters ?? false
+              )}
+            />
+            <KV
+              label="References format"
+              value={agent.knowledge?.references_format}
+            />
+          </Section>
+        )}
+
+        {/* Memory */}
+        {hasMemory && (
+          <Section icon={<Brain size={12} />} title="Memory">
+            <KV
+              label="Agentic memory"
+              value={String(agent.memory?.enable_agentic_memory ?? false)}
+            />
+            <KV
+              label="Update on run"
+              value={String(agent.memory?.update_memory_on_run ?? false)}
+            />
+            <KV label="Table" value={agent.memory?.memory_table} />
+            {agent.memory?.model && (
+              <KV
+                label="Memory model"
+                value={`${agent.memory.model.provider ?? ''} / ${agent.memory.model.model ?? ''}`}
+              />
+            )}
+          </Section>
+        )}
+
+        {/* Reasoning */}
+        {hasReasoning && (
+          <Section icon={<Lightbulb size={12} />} title="Reasoning">
+            <KV
+              label="Min steps"
+              value={agent.reasoning?.reasoning_min_steps}
+            />
+            <KV
+              label="Max steps"
+              value={agent.reasoning?.reasoning_max_steps}
+            />
+            <KV
+              label="Reasoning agent"
+              value={agent.reasoning?.reasoning_agent_id}
+            />
+          </Section>
+        )}
+
+        {/* Sessions */}
+        {agent.sessions && (
+          <Section icon={<Settings2 size={12} />} title="Sessions">
+            <KV label="Table" value={agent.sessions.session_table} />
+            <KV
+              label="History in context"
+              value={String(agent.sessions.add_history_to_context ?? false)}
+            />
+            <KV
+              label="Summaries"
+              value={String(agent.sessions.enable_session_summaries ?? false)}
+            />
+            <KV label="History runs" value={agent.sessions.num_history_runs} />
+          </Section>
+        )}
+
+        {/* Default tools */}
+        {agent.default_tools && (
+          <Section icon={<Settings2 size={12} />} title="Default Tools">
+            <KV
+              label="Read chat history"
+              value={String(agent.default_tools.read_chat_history ?? false)}
+            />
+            <KV
+              label="Search knowledge"
+              value={String(agent.default_tools.search_knowledge ?? false)}
+            />
+            <KV
+              label="Update knowledge"
+              value={String(agent.default_tools.update_knowledge ?? false)}
+            />
+            <KV
+              label="Read tool call history"
+              value={String(
+                agent.default_tools.read_tool_call_history ?? false
+              )}
+            />
+          </Section>
+        )}
+
+        {/* Metadata */}
+        {agent.metadata && Object.keys(agent.metadata).length > 0 && (
+          <Section icon={<Settings2 size={12} />} title="Metadata">
+            <pre className="text-muted-foreground overflow-x-auto rounded bg-accent/50 p-2 text-[10px]">
+              {JSON.stringify(agent.metadata, null, 2)}
+            </pre>
+          </Section>
+        )}
+      </div>
+    </ScrollArea>
+  )
+}
