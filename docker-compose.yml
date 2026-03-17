@@ -1,0 +1,29 @@
+# ---------------------------------------------------------------------------
+# NEXUS Console — Docker Compose
+# ---------------------------------------------------------------------------
+#
+# Usage:
+#   docker compose up -d
+#
+# Environment variables (set in .env or pass via CLI):
+#   NEXUS_PORT          — Host port to expose (default: 3000)
+#
+# The UI connects to AgentOS at runtime via the browser.
+# Configure the endpoint URL in the Settings dialog (gear icon in sidebar).
+# ---------------------------------------------------------------------------
+
+services:
+  nexus-console:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexus-console
+    ports:
+      - "${NEXUS_PORT:-3000}:3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
