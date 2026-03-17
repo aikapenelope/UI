@@ -1,13 +1,28 @@
 import { APIRoutes } from './routes'
 import { apiGet } from './client'
-import type { RegistryContentResponse } from '@/types/agentOS'
+import type {
+  PaginatedResponse,
+  RegistryContentResponse
+} from '@/types/agentOS'
 
 export const listRegistryAPI = (
   base: string,
-  params?: { type?: string },
+  params?: {
+    type?: string
+    name?: string
+    page?: number
+    limit?: number
+  },
   authToken?: string
 ) => {
   const url = new URL(APIRoutes.ListRegistry(base))
-  if (params?.type) url.searchParams.set('type', params.type)
-  return apiGet<RegistryContentResponse[]>(url.toString(), authToken)
+  if (params) {
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined) url.searchParams.set(k, String(v))
+    })
+  }
+  return apiGet<PaginatedResponse<RegistryContentResponse>>(
+    url.toString(),
+    authToken
+  )
 }
