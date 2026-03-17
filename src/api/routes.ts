@@ -193,6 +193,9 @@ export const APIRoutes = {
   DatabaseMigrate: (base: string, dbId: string) =>
     u(base, `/databases/${dbId}/migrate`),
 
+  // -- API Info -------------------------------------------------------------
+  APIInfo: (base: string) => u(base, '/'),
+
   // -- Status (legacy alias) -----------------------------------------------
   Status: (base: string) => u(base, '/health')
 }
