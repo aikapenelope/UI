@@ -3,6 +3,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useStore } from '@/store'
 import { useSessionsStore } from '@/stores/sessionsStore'
+import PageHeader from '@/components/shared/PageHeader'
+import PageSkeleton from '@/components/shared/PageSkeleton'
+import EmptyState from '@/components/shared/EmptyState'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
@@ -31,7 +34,7 @@ import {
   Edit2,
   Loader2,
   MessageSquare,
-  RefreshCw,
+  MessagesSquare,
   Search,
   Trash2
 } from 'lucide-react'
@@ -347,28 +350,13 @@ export default function SessionsPage() {
     <div className="flex h-full">
       {/* Left: session list */}
       <div className="flex flex-1 flex-col overflow-hidden border-r border-border">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-border px-4 py-3">
-          <div>
-            <h1 className="text-sm font-semibold text-primary">Sessions</h1>
-            <p className="text-muted-foreground text-xs">
-              {meta?.total_count ?? sessions.length} session
-              {(meta?.total_count ?? sessions.length) !== 1 ? 's' : ''}
-            </p>
-          </div>
-          <button
-            onClick={load}
-            disabled={loading}
-            className="text-muted-foreground rounded border border-border p-1.5 hover:bg-accent hover:text-primary disabled:opacity-40"
-            title="Refresh"
-          >
-            {loading ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : (
-              <RefreshCw size={14} />
-            )}
-          </button>
-        </div>
+        <PageHeader
+          title="Sessions"
+          subtitle={`${meta?.total_count ?? sessions.length} session${(meta?.total_count ?? sessions.length) !== 1 ? 's' : ''}`}
+          count={meta?.total_count ?? sessions.length}
+          loading={loading}
+          onRefresh={load}
+        />
 
         {/* Type filter tabs */}
         <div className="border-b border-border px-4 py-2">
@@ -410,14 +398,13 @@ export default function SessionsPage() {
         {/* Table */}
         <ScrollArea className="flex-1">
           {loading && sessions.length === 0 ? (
-            <div className="text-muted-foreground flex items-center justify-center py-20 text-xs">
-              <Loader2 size={16} className="mr-2 animate-spin" />
-              Loading sessions...
-            </div>
+            <PageSkeleton rows={8} />
           ) : sessions.length === 0 ? (
-            <div className="text-muted-foreground py-20 text-center text-xs">
-              No sessions found.
-            </div>
+            <EmptyState
+              icon={<MessagesSquare size={20} />}
+              title="No sessions found"
+              description="Sessions will appear here once agents, teams, or workflows have been used."
+            />
           ) : (
             <Table>
               <TableHeader>
@@ -458,12 +445,12 @@ export default function SessionsPage() {
                       <TableCell className="text-muted-foreground py-2 text-[11px]">
                         {s.created_at
                           ? dayjs(s.created_at).format('MMM D, HH:mm')
-                          : '—'}
+                          : '\u2014'}
                       </TableCell>
                       <TableCell className="text-muted-foreground py-2 text-[11px]">
                         {s.updated_at
                           ? dayjs(s.updated_at).format('MMM D, HH:mm')
-                          : '—'}
+                          : '\u2014'}
                       </TableCell>
                     </TableRow>
                   )
@@ -508,9 +495,11 @@ export default function SessionsPage() {
             onDelete={(id) => void handleDelete(id)}
           />
         ) : (
-          <div className="text-muted-foreground flex flex-1 items-center justify-center text-xs">
-            Select a session to view details
-          </div>
+          <EmptyState
+            icon={<MessagesSquare size={20} />}
+            title="Select a session"
+            description="Click on a session to view its details, runs, and chat history."
+          />
         )}
       </div>
 
