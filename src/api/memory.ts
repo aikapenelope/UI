@@ -10,6 +10,10 @@ import type {
   UserStats
 } from '@/types/agentOS'
 
+// ---------------------------------------------------------------------------
+// List memories (paginated, with filters)
+// ---------------------------------------------------------------------------
+
 export const getMemoriesAPI = (
   base: string,
   params?: {
@@ -17,6 +21,9 @@ export const getMemoriesAPI = (
     agent_id?: string
     team_id?: string
     topics?: string
+    search_content?: string
+    sort_by?: string
+    sort_order?: 'asc' | 'desc'
     db_id?: string
     page?: number
     limit?: number
@@ -32,6 +39,10 @@ export const getMemoriesAPI = (
   return apiGet<PaginatedResponse<UserMemory>>(url.toString(), authToken)
 }
 
+// ---------------------------------------------------------------------------
+// Single memory
+// ---------------------------------------------------------------------------
+
 export const getMemoryAPI = (
   base: string,
   memoryId: string,
@@ -43,6 +54,10 @@ export const getMemoryAPI = (
   return apiGet<UserMemory>(url.toString(), authToken)
 }
 
+// ---------------------------------------------------------------------------
+// Create
+// ---------------------------------------------------------------------------
+
 export const createMemoryAPI = (
   base: string,
   body: UserMemoryCreate,
@@ -53,6 +68,10 @@ export const createMemoryAPI = (
   if (dbId) url.searchParams.set('db_id', dbId)
   return apiPost<UserMemory>(url.toString(), body, authToken)
 }
+
+// ---------------------------------------------------------------------------
+// Update
+// ---------------------------------------------------------------------------
 
 export const updateMemoryAPI = (
   base: string,
@@ -66,6 +85,10 @@ export const updateMemoryAPI = (
   return apiPatch<UserMemory>(url.toString(), body, authToken)
 }
 
+// ---------------------------------------------------------------------------
+// Delete single
+// ---------------------------------------------------------------------------
+
 export const deleteMemoryAPI = (
   base: string,
   memoryId: string,
@@ -76,6 +99,10 @@ export const deleteMemoryAPI = (
   if (dbId) url.searchParams.set('db_id', dbId)
   return apiDelete(url.toString(), authToken)
 }
+
+// ---------------------------------------------------------------------------
+// Bulk delete
+// ---------------------------------------------------------------------------
 
 export const deleteMemoriesAPI = (
   base: string,
@@ -88,6 +115,10 @@ export const deleteMemoriesAPI = (
   return apiDelete(url.toString(), authToken, body)
 }
 
+// ---------------------------------------------------------------------------
+// Topics
+// ---------------------------------------------------------------------------
+
 export const getMemoryTopicsAPI = (
   base: string,
   params?: { user_id?: string; db_id?: string },
@@ -99,15 +130,32 @@ export const getMemoryTopicsAPI = (
   return apiGet<string[]>(url.toString(), authToken)
 }
 
+// ---------------------------------------------------------------------------
+// User memory stats (paginated)
+// ---------------------------------------------------------------------------
+
 export const getUserMemoryStatsAPI = (
   base: string,
-  params?: { db_id?: string },
+  params?: {
+    limit?: number
+    page?: number
+    user_id?: string
+    db_id?: string
+  },
   authToken?: string
 ) => {
   const url = new URL(APIRoutes.GetUserMemoryStats(base))
-  if (params?.db_id) url.searchParams.set('db_id', params.db_id)
+  if (params) {
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined) url.searchParams.set(k, String(v))
+    })
+  }
   return apiGet<PaginatedResponse<UserStats>>(url.toString(), authToken)
 }
+
+// ---------------------------------------------------------------------------
+// Optimize
+// ---------------------------------------------------------------------------
 
 export const optimizeMemoriesAPI = (
   base: string,
