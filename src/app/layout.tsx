@@ -3,6 +3,7 @@ import { DM_Mono, Geist } from 'next/font/google'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { Toaster } from '@/components/ui/sonner'
 import NavSidebar from '@/components/layout/NavSidebar'
+import ErrorBoundary from '@/components/layout/ErrorBoundary'
 import './globals.css'
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -33,7 +34,9 @@ export default function RootLayout({
         <NuqsAdapter>
           <div className="flex h-screen">
             <NavSidebar />
-            <main className="flex-1 overflow-hidden">{children}</main>
+            <main className="flex-1 overflow-hidden">
+              <ErrorBoundary>{children}</ErrorBoundary>
+            </main>
           </div>
         </NuqsAdapter>
         <Toaster />
