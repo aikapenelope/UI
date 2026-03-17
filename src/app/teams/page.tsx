@@ -4,6 +4,9 @@ import { useCallback, useEffect, useState } from 'react'
 import { useStore } from '@/store'
 import { getTeamsAPI } from '@/api/os'
 import TeamDetailPanel from '@/components/teams/TeamDetailPanel'
+import PageHeader from '@/components/shared/PageHeader'
+import PageSkeleton from '@/components/shared/PageSkeleton'
+import EmptyState from '@/components/shared/EmptyState'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
@@ -16,16 +19,7 @@ import {
   TableRow
 } from '@/components/ui/table'
 import type { TeamDetails } from '@/types/os'
-import {
-  BookOpen,
-  Brain,
-  Cpu,
-  Lightbulb,
-  Loader2,
-  RefreshCw,
-  Users,
-  Wrench
-} from 'lucide-react'
+import { BookOpen, Brain, Cpu, Lightbulb, Users, Wrench } from 'lucide-react'
 
 export default function TeamsPage() {
   const endpoint = useStore((s) => s.selectedEndpoint)
@@ -58,39 +52,23 @@ export default function TeamsPage() {
     <div className="flex h-full">
       {/* Left: team list */}
       <div className="flex flex-1 flex-col overflow-hidden border-r border-border">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-border px-4 py-3">
-          <div>
-            <h1 className="text-sm font-semibold text-primary">Teams</h1>
-            <p className="text-muted-foreground text-xs">
-              {teams.length} team{teams.length !== 1 ? 's' : ''} registered
-            </p>
-          </div>
-          <button
-            onClick={() => void fetchTeams()}
-            disabled={loading}
-            className="text-muted-foreground rounded border border-border p-1.5 hover:bg-accent hover:text-primary disabled:opacity-40"
-            title="Refresh"
-          >
-            {loading ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : (
-              <RefreshCw size={14} />
-            )}
-          </button>
-        </div>
+        <PageHeader
+          title="Teams"
+          subtitle={`${teams.length} team${teams.length !== 1 ? 's' : ''} registered`}
+          count={teams.length}
+          loading={loading}
+          onRefresh={() => void fetchTeams()}
+        />
 
-        {/* Table */}
         <ScrollArea className="flex-1">
           {loading && teams.length === 0 ? (
-            <div className="text-muted-foreground flex items-center justify-center py-20 text-xs">
-              <Loader2 size={16} className="mr-2 animate-spin" />
-              Loading teams...
-            </div>
+            <PageSkeleton rows={6} />
           ) : teams.length === 0 ? (
-            <div className="text-muted-foreground py-20 text-center text-xs">
-              No teams found. Make sure your AgentOS endpoint is running.
-            </div>
+            <EmptyState
+              icon={<Users size={20} />}
+              title="No teams found"
+              description="Make sure your AgentOS endpoint is running and has teams registered."
+            />
           ) : (
             <Table>
               <TableHeader>
@@ -142,7 +120,7 @@ export default function TeamsPage() {
                           </Badge>
                         ) : (
                           <span className="text-muted-foreground text-[11px]">
-                            —
+                            {'\u2014'}
                           </span>
                         )}
                       </TableCell>
@@ -217,9 +195,11 @@ export default function TeamsPage() {
         {selected ? (
           <TeamDetailPanel team={selected} />
         ) : (
-          <div className="text-muted-foreground flex flex-1 items-center justify-center text-xs">
-            Select a team to view details
-          </div>
+          <EmptyState
+            icon={<Users size={20} />}
+            title="Select a team"
+            description="Click on a team to view its details."
+          />
         )}
       </div>
 

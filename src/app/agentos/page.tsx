@@ -4,6 +4,9 @@ import { useCallback, useEffect, useState } from 'react'
 import { useStore } from '@/store'
 import { apiGet } from '@/api/client'
 import { APIRoutes } from '@/api/routes'
+import PageHeader from '@/components/shared/PageHeader'
+import PageSkeleton from '@/components/shared/PageSkeleton'
+import EmptyState from '@/components/shared/EmptyState'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
@@ -18,8 +21,6 @@ import {
   Database,
   GitBranch,
   Globe,
-  Loader2,
-  RefreshCw,
   Server,
   Users
 } from 'lucide-react'
@@ -51,259 +52,264 @@ export default function AgentOSPage() {
     void load()
   }, [load])
 
-  if (loading) {
-    return (
-      <div className="text-muted-foreground flex h-full items-center justify-center text-xs">
-        <Loader2 size={16} className="mr-2 animate-spin" />
-        Loading AgentOS config...
-      </div>
-    )
-  }
-
   return (
-    <ScrollArea className="h-full">
-      <div className="mx-auto max-w-3xl p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-semibold text-primary">
-              {config?.name || apiInfo?.name || 'AgentOS'}
-            </h1>
-            <p className="text-muted-foreground mt-0.5 text-xs">
-              {config?.description || 'Enterprise Agent Operating System'}
-            </p>
-          </div>
-          <button
-            onClick={() => void load()}
-            className="text-muted-foreground rounded border border-border p-1.5 hover:bg-accent hover:text-primary"
-            title="Refresh"
-          >
-            <RefreshCw size={14} />
-          </button>
-        </div>
+    <div className="flex h-full flex-col">
+      <PageHeader
+        title={config?.name || apiInfo?.name || 'AgentOS'}
+        subtitle={config?.description || 'Enterprise Agent Operating System'}
+        loading={loading}
+        onRefresh={() => void load()}
+      />
 
-        <Separator className="my-4" />
+      {loading ? (
+        <PageSkeleton rows={10} />
+      ) : (
+        <ScrollArea className="flex-1">
+          <div className="mx-auto max-w-3xl p-6">
+            {/* API Info */}
+            <div className="grid grid-cols-3 gap-3">
+              <InfoCard
+                icon={<Server size={14} />}
+                label="OS ID"
+                value={config?.os_id || apiInfo?.id || '\u2014'}
+              />
+              <InfoCard
+                icon={<Globe size={14} />}
+                label="Version"
+                value={apiInfo?.version || '\u2014'}
+              />
+              <InfoCard
+                icon={<Database size={14} />}
+                label="Database"
+                value={config?.os_database || '\u2014'}
+              />
+            </div>
 
-        {/* API Info */}
-        <div className="grid grid-cols-3 gap-3">
-          <InfoCard
-            icon={<Server size={14} />}
-            label="OS ID"
-            value={config?.os_id || apiInfo?.id || '—'}
-          />
-          <InfoCard
-            icon={<Globe size={14} />}
-            label="Version"
-            value={apiInfo?.version || '—'}
-          />
-          <InfoCard
-            icon={<Database size={14} />}
-            label="Database"
-            value={config?.os_database || '—'}
-          />
-        </div>
+            <Separator className="my-4" />
 
-        <Separator className="my-4" />
-
-        {/* Agents */}
-        <SectionHeader
-          icon={<Bot size={14} />}
-          title="Agents"
-          count={config?.agents?.length ?? 0}
-        />
-        <div className="mt-2 grid gap-2">
-          {config?.agents?.map((a) => (
-            <div
-              key={a.id}
-              className="flex items-center justify-between rounded border border-border px-3 py-2"
-            >
-              <div>
-                <span className="text-xs font-medium text-primary">
-                  {a.name || a.id}
-                </span>
-                {a.description && (
-                  <p className="text-muted-foreground max-w-md truncate text-[10px]">
-                    {a.description}
-                  </p>
-                )}
-              </div>
-              {a.db_id && (
-                <Badge variant="outline" className="text-[9px] font-normal">
-                  db: {a.db_id}
-                </Badge>
+            {/* Agents */}
+            <SectionHeader
+              icon={<Bot size={14} />}
+              title="Agents"
+              count={config?.agents?.length ?? 0}
+            />
+            <div className="mt-2 grid gap-2">
+              {config?.agents?.map((a) => (
+                <div
+                  key={a.id}
+                  className="flex items-center justify-between rounded border border-border px-3 py-2"
+                >
+                  <div>
+                    <span className="text-xs font-medium text-primary">
+                      {a.name || a.id}
+                    </span>
+                    {a.description && (
+                      <p className="text-muted-foreground max-w-md truncate text-[10px]">
+                        {a.description}
+                      </p>
+                    )}
+                  </div>
+                  {a.db_id && (
+                    <Badge variant="outline" className="text-[9px] font-normal">
+                      db: {a.db_id}
+                    </Badge>
+                  )}
+                </div>
+              ))}
+              {(!config?.agents || config.agents.length === 0) && (
+                <EmptyState
+                  icon={<Bot size={18} />}
+                  title="No agents registered"
+                  description="Register agents in your AgentOS configuration."
+                />
               )}
             </div>
-          ))}
-          {(!config?.agents || config.agents.length === 0) && (
-            <p className="text-muted-foreground text-xs">
-              No agents registered
-            </p>
-          )}
-        </div>
 
-        <Separator className="my-4" />
+            <Separator className="my-4" />
 
-        {/* Teams */}
-        <SectionHeader
-          icon={<Users size={14} />}
-          title="Teams"
-          count={config?.teams?.length ?? 0}
-        />
-        <div className="mt-2 grid gap-2">
-          {config?.teams?.map((t) => (
-            <div
-              key={t.id}
-              className="flex items-center justify-between rounded border border-border px-3 py-2"
-            >
-              <div>
-                <span className="text-xs font-medium text-primary">
-                  {t.name || t.id}
-                </span>
-                {t.description && (
-                  <p className="text-muted-foreground max-w-md truncate text-[10px]">
-                    {t.description}
-                  </p>
-                )}
-              </div>
-              <div className="flex gap-1">
-                {t.mode && (
-                  <Badge variant="secondary" className="text-[9px] font-normal">
-                    {t.mode}
-                  </Badge>
-                )}
-              </div>
+            {/* Teams */}
+            <SectionHeader
+              icon={<Users size={14} />}
+              title="Teams"
+              count={config?.teams?.length ?? 0}
+            />
+            <div className="mt-2 grid gap-2">
+              {config?.teams?.map((t) => (
+                <div
+                  key={t.id}
+                  className="flex items-center justify-between rounded border border-border px-3 py-2"
+                >
+                  <div>
+                    <span className="text-xs font-medium text-primary">
+                      {t.name || t.id}
+                    </span>
+                    {t.description && (
+                      <p className="text-muted-foreground max-w-md truncate text-[10px]">
+                        {t.description}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex gap-1">
+                    {t.mode && (
+                      <Badge
+                        variant="secondary"
+                        className="text-[9px] font-normal"
+                      >
+                        {t.mode}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {(!config?.teams || config.teams.length === 0) && (
+                <EmptyState
+                  icon={<Users size={18} />}
+                  title="No teams registered"
+                  description="Register teams in your AgentOS configuration."
+                />
+              )}
             </div>
-          ))}
-          {(!config?.teams || config.teams.length === 0) && (
-            <p className="text-muted-foreground text-xs">No teams registered</p>
-          )}
-        </div>
 
-        <Separator className="my-4" />
+            <Separator className="my-4" />
 
-        {/* Workflows */}
-        <SectionHeader
-          icon={<GitBranch size={14} />}
-          title="Workflows"
-          count={config?.workflows?.length ?? 0}
-        />
-        <div className="mt-2 grid gap-2">
-          {config?.workflows?.map((w) => (
-            <div
-              key={w.id}
-              className="flex items-center justify-between rounded border border-border px-3 py-2"
-            >
-              <div>
-                <span className="text-xs font-medium text-primary">
-                  {w.name || w.id}
-                </span>
-                {w.description && (
-                  <p className="text-muted-foreground max-w-md truncate text-[10px]">
-                    {w.description}
-                  </p>
-                )}
-              </div>
-              <div className="flex gap-1">
-                {w.is_component && (
-                  <Badge variant="outline" className="text-[9px] font-normal">
-                    component
-                  </Badge>
-                )}
-                {w.stage && (
-                  <Badge variant="secondary" className="text-[9px] font-normal">
-                    {w.stage}
-                  </Badge>
-                )}
-              </div>
+            {/* Workflows */}
+            <SectionHeader
+              icon={<GitBranch size={14} />}
+              title="Workflows"
+              count={config?.workflows?.length ?? 0}
+            />
+            <div className="mt-2 grid gap-2">
+              {config?.workflows?.map((w) => (
+                <div
+                  key={w.id}
+                  className="flex items-center justify-between rounded border border-border px-3 py-2"
+                >
+                  <div>
+                    <span className="text-xs font-medium text-primary">
+                      {w.name || w.id}
+                    </span>
+                    {w.description && (
+                      <p className="text-muted-foreground max-w-md truncate text-[10px]">
+                        {w.description}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex gap-1">
+                    {w.is_component && (
+                      <Badge
+                        variant="outline"
+                        className="text-[9px] font-normal"
+                      >
+                        component
+                      </Badge>
+                    )}
+                    {w.stage && (
+                      <Badge
+                        variant="secondary"
+                        className="text-[9px] font-normal"
+                      >
+                        {w.stage}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {(!config?.workflows || config.workflows.length === 0) && (
+                <EmptyState
+                  icon={<GitBranch size={18} />}
+                  title="No workflows registered"
+                  description="Register workflows in your AgentOS configuration."
+                />
+              )}
             </div>
-          ))}
-          {(!config?.workflows || config.workflows.length === 0) && (
-            <p className="text-muted-foreground text-xs">
-              No workflows registered
-            </p>
-          )}
-        </div>
 
-        <Separator className="my-4" />
+            <Separator className="my-4" />
 
-        {/* Databases */}
-        <SectionHeader
-          icon={<Database size={14} />}
-          title="Databases"
-          count={config?.databases?.length ?? 0}
-        />
-        <div className="mt-2 flex flex-wrap gap-2">
-          {config?.databases?.map((db) => (
-            <Badge
-              key={db}
-              variant="outline"
-              className="text-[10px] font-normal"
-            >
-              {db}
-            </Badge>
-          ))}
-          {(!config?.databases || config.databases.length === 0) && (
-            <p className="text-muted-foreground text-xs">No databases</p>
-          )}
-        </div>
-
-        <Separator className="my-4" />
-
-        {/* Models */}
-        <SectionHeader
-          icon={<Cpu size={14} />}
-          title="Available Models"
-          count={models.length}
-        />
-        <div className="mt-2 flex flex-wrap gap-2">
-          {models.map((m) => (
-            <Badge
-              key={`${String(m.provider)}-${String(m.id)}`}
-              variant="outline"
-              className="text-[10px] font-normal"
-            >
-              {m.provider ? `${m.provider} / ` : ''}
-              {m.id || '—'}
-            </Badge>
-          ))}
-          {models.length === 0 && (
-            <p className="text-muted-foreground text-xs">No models available</p>
-          )}
-        </div>
-
-        <Separator className="my-4" />
-
-        {/* Interfaces */}
-        <SectionHeader
-          icon={<Globe size={14} />}
-          title="Interfaces"
-          count={config?.interfaces?.length ?? 0}
-        />
-        <div className="mt-2 grid gap-2">
-          {config?.interfaces?.map((iface) => (
-            <div
-              key={iface.route}
-              className="flex items-center justify-between rounded border border-border px-3 py-2"
-            >
-              <span className="font-mono text-[11px] text-primary">
-                {iface.route}
-              </span>
-              <div className="flex gap-1">
-                <Badge variant="secondary" className="text-[9px] font-normal">
-                  {iface.type}
+            {/* Databases */}
+            <SectionHeader
+              icon={<Database size={14} />}
+              title="Databases"
+              count={config?.databases?.length ?? 0}
+            />
+            <div className="mt-2 flex flex-wrap gap-2">
+              {config?.databases?.map((db) => (
+                <Badge
+                  key={db}
+                  variant="outline"
+                  className="text-[10px] font-normal"
+                >
+                  {db}
                 </Badge>
-                <Badge variant="outline" className="text-[9px] font-normal">
-                  v{iface.version}
-                </Badge>
-              </div>
+              ))}
+              {(!config?.databases || config.databases.length === 0) && (
+                <p className="text-muted-foreground text-xs">No databases</p>
+              )}
             </div>
-          ))}
-          {(!config?.interfaces || config.interfaces.length === 0) && (
-            <p className="text-muted-foreground text-xs">No interfaces</p>
-          )}
-        </div>
-      </div>
-    </ScrollArea>
+
+            <Separator className="my-4" />
+
+            {/* Models */}
+            <SectionHeader
+              icon={<Cpu size={14} />}
+              title="Available Models"
+              count={models.length}
+            />
+            <div className="mt-2 flex flex-wrap gap-2">
+              {models.map((m) => (
+                <Badge
+                  key={`${String(m.provider)}-${String(m.id)}`}
+                  variant="outline"
+                  className="text-[10px] font-normal"
+                >
+                  {m.provider ? `${m.provider} / ` : ''}
+                  {m.id || '\u2014'}
+                </Badge>
+              ))}
+              {models.length === 0 && (
+                <p className="text-muted-foreground text-xs">
+                  No models available
+                </p>
+              )}
+            </div>
+
+            <Separator className="my-4" />
+
+            {/* Interfaces */}
+            <SectionHeader
+              icon={<Globe size={14} />}
+              title="Interfaces"
+              count={config?.interfaces?.length ?? 0}
+            />
+            <div className="mt-2 grid gap-2">
+              {config?.interfaces?.map((iface) => (
+                <div
+                  key={iface.route}
+                  className="flex items-center justify-between rounded border border-border px-3 py-2"
+                >
+                  <span className="font-mono text-[11px] text-primary">
+                    {iface.route}
+                  </span>
+                  <div className="flex gap-1">
+                    <Badge
+                      variant="secondary"
+                      className="text-[9px] font-normal"
+                    >
+                      {iface.type}
+                    </Badge>
+                    <Badge variant="outline" className="text-[9px] font-normal">
+                      v{iface.version}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+              {(!config?.interfaces || config.interfaces.length === 0) && (
+                <p className="text-muted-foreground text-xs">No interfaces</p>
+              )}
+            </div>
+          </div>
+        </ScrollArea>
+      )}
+    </div>
   )
 }
 

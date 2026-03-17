@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import Icon from '@/components/ui/icon'
 import { useStore } from '@/store'
 import { getHealthAPI } from '@/api/config'
@@ -41,7 +42,7 @@ interface NavItem {
   icon: React.ReactNode
 }
 
-/** Main navigation — matches official Agno sidebar order. */
+/** Main navigation -- matches official Agno sidebar order. */
 const mainNavItems: NavItem[] = [
   { label: 'Chat', href: '/', icon: <MessageSquare size={16} /> },
   { label: 'Knowledge', href: '/knowledge', icon: <BookOpen size={16} /> },
@@ -71,7 +72,7 @@ const extendedNavItems: NavItem[] = [
   { label: 'Registry', href: '/registry', icon: <Package size={16} /> }
 ]
 
-/** Bottom section — matches official Agno sidebar order. */
+/** Bottom section -- matches official Agno sidebar order. */
 const bottomNavItems: NavItem[] = [
   { label: 'Profile', href: '/profile', icon: <User size={16} /> },
   {
@@ -232,28 +233,76 @@ function ConnectionSettingsDialog({
 }
 
 // ---------------------------------------------------------------------------
-// NavLink helper
+// NavLink helper -- adapts to collapsed / expanded state
 // ---------------------------------------------------------------------------
 
-function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
+function NavLink({
+  item,
+  pathname,
+  collapsed
+}: {
+  item: NavItem
+  pathname: string
+  collapsed: boolean
+}) {
   const isActive =
     item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
 
   return (
     <Link
       href={item.href}
-      className={`group relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors ${
+      className={`group relative flex h-9 items-center gap-3 rounded-lg px-2.5 transition-colors ${
         isActive
           ? 'bg-primary/10 text-primary'
           : 'text-muted-foreground hover:bg-accent hover:text-primary'
       }`}
-      title={item.label}
+      title={collapsed ? item.label : undefined}
     >
-      {item.icon}
-      <span className="bg-popover text-popover-foreground pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md px-2 py-1 text-xs font-medium opacity-0 shadow-md transition-opacity group-hover:opacity-100">
-        {item.label}
-      </span>
+      <span className="shrink-0">{item.icon}</span>
+      <AnimatePresence>
+        {!collapsed && (
+          <motion.span
+            initial={{ opacity: 0, width: 0 }}
+            animate={{ opacity: 1, width: 'auto' }}
+            exit={{ opacity: 0, width: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden whitespace-nowrap text-xs font-medium"
+          >
+            {item.label}
+          </motion.span>
+        )}
+      </AnimatePresence>
+      {/* Tooltip only when collapsed */}
+      {collapsed && (
+        <span className="pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md bg-accent px-2 py-1 text-xs font-medium text-primary opacity-0 shadow-md transition-opacity group-hover:opacity-100">
+          {item.label}
+        </span>
+      )}
     </Link>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Section label (visible only when expanded)
+// ---------------------------------------------------------------------------
+
+function SectionLabel({
+  label,
+  collapsed
+}: {
+  label: string
+  collapsed: boolean
+}) {
+  if (collapsed) return <div className="my-1 border-t border-primary/10" />
+  return (
+    <motion.p
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="text-muted-foreground px-2.5 pb-1 pt-3 text-[10px] font-semibold uppercase tracking-wider"
+    >
+      {label}
+    </motion.p>
   )
 }
 
@@ -261,12 +310,17 @@ function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
 // NavSidebar
 // ---------------------------------------------------------------------------
 
-export default function NavSidebar() {
+export default function NavSidebar({
+  onOpenSettings
+}: {
+  onOpenSettings?: () => void
+} = {}) {
   const pathname = usePathname()
   const endpoint = useStore((s) => s.selectedEndpoint)
   const authToken = useStore((s) => s.authToken)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [connStatus, setConnStatus] = useState<ConnectionStatus>('checking')
+  const [collapsed, setCollapsed] = useState(false)
 
   // Periodic health check
   useEffect(() => {
@@ -291,54 +345,119 @@ export default function NavSidebar() {
     }
   }, [endpoint, authToken])
 
+  const openSettings = useCallback(() => {
+    if (onOpenSettings) onOpenSettings()
+    else setSettingsOpen(true)
+  }, [onOpenSettings])
+
   return (
     <>
-      <nav className="flex h-screen w-14 shrink-0 flex-col items-center border-r border-primary/10 bg-background py-3">
+      <motion.nav
+        className="relative flex h-screen shrink-0 flex-col border-r border-primary/10 bg-background py-3 font-dmmono"
+        initial={false}
+        animate={{ width: collapsed ? '3.5rem' : '14rem' }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      >
+        {/* Collapse toggle */}
+        <motion.button
+          onClick={() => setCollapsed((c) => !c)}
+          className="text-muted-foreground absolute right-2 top-2 z-10 rounded p-1 transition-colors hover:text-primary"
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          type="button"
+          whileTap={{ scale: 0.95 }}
+        >
+          <Icon
+            type="sheet"
+            size="xs"
+            className={`transform transition-transform ${collapsed ? 'rotate-180' : 'rotate-0'}`}
+          />
+        </motion.button>
+
         {/* Logo */}
-        <div className="mb-4 flex items-center justify-center">
+        <div className="mb-2 flex items-center gap-2 px-3">
           <Icon type="agno" size="xs" />
+          <AnimatePresence>
+            {!collapsed && (
+              <motion.span
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 'auto' }}
+                exit={{ opacity: 0, width: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden whitespace-nowrap text-xs font-medium uppercase text-primary"
+              >
+                NEXUS Console
+              </motion.span>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Main navigation (official Agno sidebar order) */}
-        <div className="flex flex-1 flex-col gap-1 overflow-y-auto px-1">
+        {/* Scrollable nav area */}
+        <div className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-1.5">
           {mainNavItems.map((item) => (
-            <NavLink key={item.href} item={item} pathname={pathname} />
+            <NavLink
+              key={item.href}
+              item={item}
+              pathname={pathname}
+              collapsed={collapsed}
+            />
           ))}
 
-          {/* Separator between official and extended items */}
-          <div className="my-1 border-t border-primary/10" />
+          <SectionLabel label="Extended" collapsed={collapsed} />
 
           {extendedNavItems.map((item) => (
-            <NavLink key={item.href} item={item} pathname={pathname} />
+            <NavLink
+              key={item.href}
+              item={item}
+              pathname={pathname}
+              collapsed={collapsed}
+            />
           ))}
         </div>
 
-        {/* Bottom section: Profile, Organization, AgentOS, Billing + Settings */}
-        <div className="mt-1 border-t border-primary/10 pt-1">
-          <div className="flex flex-col items-center gap-1 px-1">
-            {bottomNavItems.map((item) => (
-              <NavLink key={item.href} item={item} pathname={pathname} />
-            ))}
+        {/* Bottom section */}
+        <div className="mt-1 border-t border-primary/10 px-1.5 pt-1">
+          {bottomNavItems.map((item) => (
+            <NavLink
+              key={item.href}
+              item={item}
+              pathname={pathname}
+              collapsed={collapsed}
+            />
+          ))}
 
-            {/* Settings button */}
-            <button
-              onClick={() => setSettingsOpen(true)}
-              className="text-muted-foreground group relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors hover:bg-accent hover:text-primary"
-              title="Connection Settings"
-            >
-              <div className="relative">
-                <Settings size={16} />
-                <div
-                  className={`absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border border-background ${statusColor(connStatus)}`}
-                />
-              </div>
-              <span className="bg-popover text-popover-foreground pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md px-2 py-1 text-xs font-medium opacity-0 shadow-md transition-opacity group-hover:opacity-100">
+          {/* Settings button */}
+          <button
+            onClick={openSettings}
+            className={`text-muted-foreground group relative flex h-9 w-full items-center gap-3 rounded-lg px-2.5 transition-colors hover:bg-accent hover:text-primary`}
+            title={collapsed ? 'Settings' : undefined}
+          >
+            <span className="relative shrink-0">
+              <Settings size={16} />
+              <div
+                className={`absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border border-background ${statusColor(connStatus)}`}
+              />
+            </span>
+            <AnimatePresence>
+              {!collapsed && (
+                <motion.span
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: 'auto' }}
+                  exit={{ opacity: 0, width: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden whitespace-nowrap text-xs font-medium"
+                >
+                  Settings
+                </motion.span>
+              )}
+            </AnimatePresence>
+            {collapsed && (
+              <span className="pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md bg-accent px-2 py-1 text-xs font-medium text-primary opacity-0 shadow-md transition-opacity group-hover:opacity-100">
                 Settings
               </span>
-            </button>
-          </div>
+            )}
+          </button>
         </div>
-      </nav>
+      </motion.nav>
 
       <ConnectionSettingsDialog
         open={settingsOpen}
@@ -347,3 +466,6 @@ export default function NavSidebar() {
     </>
   )
 }
+
+/** Hook for other components to open the settings dialog */
+export { ConnectionSettingsDialog }
