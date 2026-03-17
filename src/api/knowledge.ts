@@ -14,6 +14,10 @@ import type {
   VectorSearchResult
 } from '@/types/agentOS'
 
+// ---------------------------------------------------------------------------
+// Config
+// ---------------------------------------------------------------------------
+
 export const getKnowledgeConfigAPI = (
   base: string,
   dbId?: string,
@@ -24,7 +28,10 @@ export const getKnowledgeConfigAPI = (
   return apiGet<KnowledgeConfigResponse>(url.toString(), authToken)
 }
 
-/** Upload file content (multipart/form-data). */
+// ---------------------------------------------------------------------------
+// Upload (multipart/form-data)
+// ---------------------------------------------------------------------------
+
 export const uploadContentAPI = async (
   base: string,
   formData: FormData,
@@ -61,6 +68,10 @@ export const uploadRemoteContentAPI = (
 ) =>
   apiPost<ContentResponse>(APIRoutes.UploadRemoteContent(base), body, authToken)
 
+// ---------------------------------------------------------------------------
+// Content list (paginated)
+// ---------------------------------------------------------------------------
+
 export const getContentAPI = (
   base: string,
   params?: {
@@ -68,6 +79,8 @@ export const getContentAPI = (
     knowledge_id?: string
     page?: number
     limit?: number
+    sort_by?: string
+    sort_order?: 'asc' | 'desc'
   },
   authToken?: string
 ) => {
@@ -80,12 +93,20 @@ export const getContentAPI = (
   return apiGet<PaginatedResponse<ContentResponse>>(url.toString(), authToken)
 }
 
+// ---------------------------------------------------------------------------
+// Single content
+// ---------------------------------------------------------------------------
+
 export const getContentByIdAPI = (
   base: string,
   contentId: string,
   authToken?: string
 ) =>
   apiGet<ContentResponse>(APIRoutes.GetContentById(base, contentId), authToken)
+
+// ---------------------------------------------------------------------------
+// Update content
+// ---------------------------------------------------------------------------
 
 export const updateContentAPI = (
   base: string,
@@ -98,6 +119,10 @@ export const updateContentAPI = (
     body,
     authToken
   )
+
+// ---------------------------------------------------------------------------
+// Delete
+// ---------------------------------------------------------------------------
 
 export const deleteContentByIdAPI = (
   base: string,
@@ -117,6 +142,10 @@ export const deleteAllContentAPI = (
   return apiDelete(url.toString(), authToken)
 }
 
+// ---------------------------------------------------------------------------
+// Status
+// ---------------------------------------------------------------------------
+
 export const getContentStatusAPI = (
   base: string,
   contentId: string,
@@ -126,6 +155,10 @@ export const getContentStatusAPI = (
     APIRoutes.GetContentStatus(base, contentId),
     authToken
   )
+
+// ---------------------------------------------------------------------------
+// Search
+// ---------------------------------------------------------------------------
 
 export const searchKnowledgeAPI = (
   base: string,
@@ -137,6 +170,10 @@ export const searchKnowledgeAPI = (
     body,
     authToken
   )
+
+// ---------------------------------------------------------------------------
+// Sources
+// ---------------------------------------------------------------------------
 
 export const listKnowledgeSourcesAPI = (
   base: string,
