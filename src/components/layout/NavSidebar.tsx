@@ -27,7 +27,12 @@ import {
   Package,
   Settings,
   Bot,
-  Users
+  Users,
+  MessagesSquare,
+  User,
+  Building2,
+  Server,
+  CreditCard
 } from 'lucide-react'
 
 interface NavItem {
@@ -36,24 +41,46 @@ interface NavItem {
   icon: React.ReactNode
 }
 
-const navItems: NavItem[] = [
+/** Main navigation — matches official Agno sidebar order. */
+const mainNavItems: NavItem[] = [
   { label: 'Chat', href: '/', icon: <MessageSquare size={16} /> },
-  { label: 'Agents', href: '/agents', icon: <Bot size={16} /> },
-  { label: 'Teams', href: '/teams', icon: <Users size={16} /> },
-  { label: 'Traces', href: '/traces', icon: <Activity size={16} /> },
-  { label: 'Memory', href: '/memory', icon: <Brain size={16} /> },
   { label: 'Knowledge', href: '/knowledge', icon: <BookOpen size={16} /> },
-  { label: 'Evals', href: '/evals', icon: <FlaskConical size={16} /> },
-  { label: 'Schedules', href: '/schedules', icon: <Clock size={16} /> },
-  { label: 'Workflows', href: '/workflows', icon: <GitBranch size={16} /> },
+  { label: 'Memory', href: '/memory', icon: <Brain size={16} /> },
+  { label: 'Evaluation', href: '/evals', icon: <FlaskConical size={16} /> },
+  {
+    label: 'Sessions',
+    href: '/sessions',
+    icon: <MessagesSquare size={16} />
+  },
+  { label: 'Traces', href: '/traces', icon: <Activity size={16} /> },
+  { label: 'Metrics', href: '/metrics', icon: <BarChart3 size={16} /> },
   {
     label: 'Approvals',
     href: '/approvals',
     icon: <ShieldCheck size={16} />
   },
-  { label: 'Metrics', href: '/metrics', icon: <BarChart3 size={16} /> },
+  { label: 'Scheduler', href: '/schedules', icon: <Clock size={16} /> }
+]
+
+/** Extended items (NEXUS extras, not in official Agno sidebar). */
+const extendedNavItems: NavItem[] = [
+  { label: 'Agents', href: '/agents', icon: <Bot size={16} /> },
+  { label: 'Teams', href: '/teams', icon: <Users size={16} /> },
+  { label: 'Workflows', href: '/workflows', icon: <GitBranch size={16} /> },
   { label: 'Studio', href: '/studio', icon: <Blocks size={16} /> },
   { label: 'Registry', href: '/registry', icon: <Package size={16} /> }
+]
+
+/** Bottom section — matches official Agno sidebar order. */
+const bottomNavItems: NavItem[] = [
+  { label: 'Profile', href: '/profile', icon: <User size={16} /> },
+  {
+    label: 'Organization',
+    href: '/organization',
+    icon: <Building2 size={16} />
+  },
+  { label: 'AgentOS', href: '/agentos', icon: <Server size={16} /> },
+  { label: 'Billing', href: '/billing', icon: <CreditCard size={16} /> }
 ]
 
 // ---------------------------------------------------------------------------
@@ -205,6 +232,32 @@ function ConnectionSettingsDialog({
 }
 
 // ---------------------------------------------------------------------------
+// NavLink helper
+// ---------------------------------------------------------------------------
+
+function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
+  const isActive =
+    item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
+
+  return (
+    <Link
+      href={item.href}
+      className={`group relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors ${
+        isActive
+          ? 'bg-primary/10 text-primary'
+          : 'text-muted-foreground hover:bg-accent hover:text-primary'
+      }`}
+      title={item.label}
+    >
+      {item.icon}
+      <span className="bg-popover text-popover-foreground pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md px-2 py-1 text-xs font-medium opacity-0 shadow-md transition-opacity group-hover:opacity-100">
+        {item.label}
+      </span>
+    </Link>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // NavSidebar
 // ---------------------------------------------------------------------------
 
@@ -246,52 +299,44 @@ export default function NavSidebar() {
           <Icon type="agno" size="xs" />
         </div>
 
-        {/* Navigation items */}
+        {/* Main navigation (official Agno sidebar order) */}
         <div className="flex flex-1 flex-col gap-1 overflow-y-auto px-1">
-          {navItems.map((item) => {
-            const isActive =
-              item.href === '/'
-                ? pathname === '/'
-                : pathname.startsWith(item.href)
+          {mainNavItems.map((item) => (
+            <NavLink key={item.href} item={item} pathname={pathname} />
+          ))}
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`group relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors ${
-                  isActive
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:bg-accent hover:text-primary'
-                }`}
-                title={item.label}
-              >
-                {item.icon}
-                {/* Tooltip */}
-                <span className="bg-popover text-popover-foreground pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md px-2 py-1 text-xs font-medium opacity-0 shadow-md transition-opacity group-hover:opacity-100">
-                  {item.label}
-                </span>
-              </Link>
-            )
-          })}
+          {/* Separator between official and extended items */}
+          <div className="my-1 border-t border-primary/10" />
+
+          {extendedNavItems.map((item) => (
+            <NavLink key={item.href} item={item} pathname={pathname} />
+          ))}
         </div>
 
-        {/* Settings button at bottom */}
-        <div className="mt-2 flex flex-col items-center gap-2 px-1">
-          <button
-            onClick={() => setSettingsOpen(true)}
-            className="text-muted-foreground group relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors hover:bg-accent hover:text-primary"
-            title="Connection Settings"
-          >
-            <div className="relative">
-              <Settings size={16} />
-              <div
-                className={`absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border border-background ${statusColor(connStatus)}`}
-              />
-            </div>
-            <span className="bg-popover text-popover-foreground pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md px-2 py-1 text-xs font-medium opacity-0 shadow-md transition-opacity group-hover:opacity-100">
-              Settings
-            </span>
-          </button>
+        {/* Bottom section: Profile, Organization, AgentOS, Billing + Settings */}
+        <div className="mt-1 border-t border-primary/10 pt-1">
+          <div className="flex flex-col items-center gap-1 px-1">
+            {bottomNavItems.map((item) => (
+              <NavLink key={item.href} item={item} pathname={pathname} />
+            ))}
+
+            {/* Settings button */}
+            <button
+              onClick={() => setSettingsOpen(true)}
+              className="text-muted-foreground group relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors hover:bg-accent hover:text-primary"
+              title="Connection Settings"
+            >
+              <div className="relative">
+                <Settings size={16} />
+                <div
+                  className={`absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border border-background ${statusColor(connStatus)}`}
+                />
+              </div>
+              <span className="bg-popover text-popover-foreground pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md px-2 py-1 text-xs font-medium opacity-0 shadow-md transition-opacity group-hover:opacity-100">
+                Settings
+              </span>
+            </button>
+          </div>
         </div>
       </nav>
 

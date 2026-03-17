@@ -669,8 +669,10 @@ export interface RegistryContentResponse {
 }
 
 // ---------------------------------------------------------------------------
-// Sessions (extended)
+// Sessions
 // ---------------------------------------------------------------------------
+
+export type SessionType = 'agent' | 'team' | 'workflow'
 
 export interface SessionSchema {
   session_id: string
@@ -701,6 +703,68 @@ export interface UpdateSessionRequest {
 export interface DeleteSessionRequest {
   session_ids: string[]
   session_types: string[]
+}
+
+export interface AgentSessionDetailSchema {
+  user_id?: string | null
+  agent_session_id: string
+  session_id: string
+  session_name: string
+  session_summary?: Record<string, unknown> | null
+  session_state?: Record<string, unknown> | null
+  agent_id?: string | null
+  total_tokens?: number | null
+  agent_data?: Record<string, unknown> | null
+  metrics?: Record<string, unknown> | null
+  metadata?: Record<string, unknown> | null
+  chat_history?: Record<string, unknown>[] | null
+  created_at?: string | null
+  updated_at?: string | null
+}
+
+export interface TeamSessionDetailSchema {
+  session_id: string
+  session_name: string
+  user_id?: string | null
+  team_id?: string | null
+  session_summary?: Record<string, unknown> | null
+  session_state?: Record<string, unknown> | null
+  metrics?: Record<string, unknown> | null
+  team_data?: Record<string, unknown> | null
+  metadata?: Record<string, unknown> | null
+  chat_history?: Record<string, unknown>[] | null
+  created_at?: string | null
+  updated_at?: string | null
+  total_tokens?: number | null
+}
+
+export interface WorkflowSessionDetailSchema {
+  user_id?: string | null
+  workflow_id?: string | null
+  workflow_name?: string | null
+  session_id: string
+  session_name: string
+  session_data?: Record<string, unknown> | null
+  session_state?: Record<string, unknown> | null
+  workflow_data?: Record<string, unknown> | null
+  metadata?: Record<string, unknown> | null
+  created_at?: string | null
+  updated_at?: string | null
+}
+
+export type SessionDetailSchema =
+  | AgentSessionDetailSchema
+  | TeamSessionDetailSchema
+  | WorkflowSessionDetailSchema
+
+// ---------------------------------------------------------------------------
+// API Info (GET /)
+// ---------------------------------------------------------------------------
+
+export interface APIInfoResponse {
+  name: string
+  id: string
+  version: string
 }
 
 // ---------------------------------------------------------------------------
