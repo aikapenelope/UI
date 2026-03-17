@@ -25,7 +25,9 @@ import {
   BarChart3,
   Blocks,
   Package,
-  Settings
+  Settings,
+  Bot,
+  Users
 } from 'lucide-react'
 
 interface NavItem {
@@ -36,6 +38,8 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: 'Chat', href: '/', icon: <MessageSquare size={16} /> },
+  { label: 'Agents', href: '/agents', icon: <Bot size={16} /> },
+  { label: 'Teams', href: '/teams', icon: <Users size={16} /> },
   { label: 'Traces', href: '/traces', icon: <Activity size={16} /> },
   { label: 'Memory', href: '/memory', icon: <Brain size={16} /> },
   { label: 'Knowledge', href: '/knowledge', icon: <BookOpen size={16} /> },

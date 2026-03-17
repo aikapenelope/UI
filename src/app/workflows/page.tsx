@@ -322,7 +322,7 @@ export default function WorkflowsPage() {
       try {
         const res = await runWorkflowAPI(
           endpoint,
-          selectedWorkflow.id,
+          selectedWorkflow.id ?? '',
           { input },
           authToken || undefined
         )
