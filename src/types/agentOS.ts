@@ -538,6 +538,26 @@ export interface ApprovalStatusResponse {
 // Metrics
 // ---------------------------------------------------------------------------
 
+export interface TokenMetrics {
+  input_tokens?: number
+  output_tokens?: number
+  total_tokens?: number
+  audio_tokens?: number
+  input_audio_tokens?: number
+  output_audio_tokens?: number
+  cached_tokens?: number
+  cache_read_tokens?: number
+  cache_write_tokens?: number
+  reasoning_tokens?: number
+  [key: string]: number | undefined
+}
+
+export interface ModelMetric {
+  model_id: string
+  model_provider?: string
+  count: number
+}
+
 export interface DayAggregatedMetrics {
   id: string
   agent_runs_count: number
@@ -547,8 +567,8 @@ export interface DayAggregatedMetrics {
   workflow_runs_count: number
   workflow_sessions_count: number
   users_count: number
-  token_metrics: Record<string, unknown>
-  model_metrics: Record<string, unknown>[]
+  token_metrics: TokenMetrics
+  model_metrics: ModelMetric[]
   date: string
   created_at: string
   updated_at: string
