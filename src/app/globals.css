@@ -6,10 +6,115 @@
   :root {
     --color-border-default: 255, 255, 255, 0.2;
     --scrollbar-width: 0.1rem;
+    --glass-bg: rgba(255, 255, 255, 0.04);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-highlight: rgba(255, 255, 255, 0.06);
+    --glow-brand: rgba(255, 64, 23, 0.15);
+    --glow-positive: rgba(34, 197, 94, 0.15);
+    --glow-destructive: rgba(229, 57, 53, 0.15);
+    --glow-blue: rgba(59, 130, 246, 0.15);
+    --glow-amber: rgba(245, 158, 11, 0.15);
   }
 
   body {
     @apply bg-background/80 text-secondary;
+  }
+}
+
+/* Glassmorphism utility classes */
+@layer components {
+  .glass {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .glass-hover {
+    transition: all 0.2s ease;
+  }
+  .glass-hover:hover {
+    background: var(--glass-highlight);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .glass-active {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .glow-brand {
+    box-shadow: 0 0 20px var(--glow-brand), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .glow-positive {
+    box-shadow: 0 0 20px var(--glow-positive), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .glow-destructive {
+    box-shadow: 0 0 20px var(--glow-destructive), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .glow-blue {
+    box-shadow: 0 0 20px var(--glow-blue), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .glow-amber {
+    box-shadow: 0 0 20px var(--glow-amber), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .stat-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .chip-success {
+    background: rgba(34, 197, 94, 0.12);
+    color: #22C55E;
+    border: 1px solid rgba(34, 197, 94, 0.25);
+  }
+
+  .chip-warning {
+    background: rgba(245, 158, 11, 0.12);
+    color: #F59E0B;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+  }
+
+  .chip-danger {
+    background: rgba(229, 57, 53, 0.12);
+    color: #E53935;
+    border: 1px solid rgba(229, 57, 53, 0.25);
+  }
+
+  .chip-info {
+    background: rgba(59, 130, 246, 0.12);
+    color: #3B82F6;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+  }
+
+  .chip-neutral {
+    background: rgba(161, 161, 170, 0.12);
+    color: #A1A1AA;
+    border: 1px solid rgba(161, 161, 170, 0.25);
+  }
+
+  .chip-brand {
+    background: rgba(255, 64, 23, 0.12);
+    color: #FF4017;
+    border: 1px solid rgba(255, 64, 23, 0.25);
+  }
+
+  .drop-zone {
+    border: 2px dashed rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.02);
+    transition: all 0.2s ease;
+  }
+  .drop-zone:hover,
+  .drop-zone.drag-over {
+    border-color: rgba(255, 64, 23, 0.4);
+    background: rgba(255, 64, 23, 0.05);
   }
 }
 

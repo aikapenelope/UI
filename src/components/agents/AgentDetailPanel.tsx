@@ -16,6 +16,7 @@ import {
   Cpu,
   Lightbulb,
   Settings2,
+  ShieldCheck,
   Wrench
 } from 'lucide-react'
 import { useState } from 'react'
@@ -78,6 +79,44 @@ function KV({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 // ---------------------------------------------------------------------------
+// Tool tile (glassmorphism grid)
+// ---------------------------------------------------------------------------
+
+function ToolTile({
+  name,
+  description,
+  requiresConfirmation
+}: {
+  name: string
+  description?: string
+  requiresConfirmation?: boolean
+}) {
+  return (
+    <div className="glass glass-hover flex flex-col gap-1 rounded-lg p-2.5">
+      <div className="flex items-center gap-2">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-info/10 text-info">
+          <Wrench size={13} />
+        </div>
+        <span className="truncate text-[11px] font-medium text-primary">
+          {name}
+        </span>
+      </div>
+      {description && (
+        <p className="text-muted-foreground line-clamp-2 text-[10px]">
+          {description}
+        </p>
+      )}
+      {requiresConfirmation && (
+        <span className="chip-warning mt-0.5 flex w-fit items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px]">
+          <ShieldCheck size={8} />
+          confirmation
+        </span>
+      )}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // AgentDetailPanel
 // ---------------------------------------------------------------------------
 
@@ -107,31 +146,31 @@ export default function AgentDetailPanel({ agent }: { agent: AgentDetails }) {
           )}
         </div>
 
-        {/* Capability badges */}
-        <div className="flex flex-wrap gap-1 px-2 pb-1">
+        {/* Capability chips */}
+        <div className="flex flex-wrap gap-1.5 px-2 pb-1">
           {toolsList.length > 0 && (
-            <Badge variant="outline" className="gap-1 text-[10px] font-normal">
+            <span className="chip-info flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px]">
               <Wrench size={10} />
               {toolsList.length} tool{toolsList.length !== 1 ? 's' : ''}
-            </Badge>
+            </span>
           )}
           {hasKnowledge && (
-            <Badge variant="outline" className="gap-1 text-[10px] font-normal">
+            <span className="chip-brand flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px]">
               <BookOpen size={10} />
               Knowledge
-            </Badge>
+            </span>
           )}
           {hasMemory && (
-            <Badge variant="outline" className="gap-1 text-[10px] font-normal">
+            <span className="chip-success flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px]">
               <Brain size={10} />
               Memory
-            </Badge>
+            </span>
           )}
           {hasReasoning && (
-            <Badge variant="outline" className="gap-1 text-[10px] font-normal">
+            <span className="chip-warning flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px]">
               <Lightbulb size={10} />
               Reasoning
-            </Badge>
+            </span>
           )}
         </div>
 
@@ -146,7 +185,7 @@ export default function AgentDetailPanel({ agent }: { agent: AgentDetails }) {
           </Section>
         )}
 
-        {/* Tools */}
+        {/* Tools -- grid tiles */}
         {toolsList.length > 0 && (
           <Section
             icon={<Wrench size={12} />}
@@ -154,30 +193,20 @@ export default function AgentDetailPanel({ agent }: { agent: AgentDetails }) {
             badge={String(toolsList.length)}
             defaultOpen
           >
-            <div className="flex flex-col gap-1">
+            <div className="grid grid-cols-1 gap-2">
               {toolsList.map((t) => (
-                <div
+                <ToolTile
                   key={t.name}
-                  className="rounded border border-border px-2 py-1"
-                >
-                  <span className="text-[11px] font-medium text-primary">
-                    {t.name}
-                  </span>
-                  {t.description && (
-                    <p className="text-muted-foreground text-[10px]">
-                      {t.description}
-                    </p>
-                  )}
-                  {t.requires_confirmation && (
-                    <Badge variant="secondary" className="mt-0.5 text-[9px]">
-                      requires confirmation
-                    </Badge>
-                  )}
-                </div>
+                  name={t.name}
+                  description={t.description ?? undefined}
+                  requiresConfirmation={t.requires_confirmation ?? undefined}
+                />
               ))}
             </div>
-            <KV label="Call limit" value={agent.tools?.tool_call_limit} />
-            <KV label="Tool choice" value={agent.tools?.tool_choice} />
+            <div className="mt-2">
+              <KV label="Call limit" value={agent.tools?.tool_call_limit} />
+              <KV label="Tool choice" value={agent.tools?.tool_choice} />
+            </div>
           </Section>
         )}
 

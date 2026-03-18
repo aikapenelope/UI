@@ -52,18 +52,16 @@ function formatTs(epoch?: number | null): string {
   })
 }
 
-function statusVariant(
-  status: string
-): 'default' | 'secondary' | 'destructive' | 'outline' {
+function statusChip(status: string): string {
   switch (status) {
     case 'approved':
-      return 'default'
+      return 'chip-success'
     case 'pending':
-      return 'secondary'
+      return 'chip-warning'
     case 'rejected':
-      return 'destructive'
+      return 'chip-danger'
     default:
-      return 'outline'
+      return 'chip-neutral'
   }
 }
 
@@ -255,12 +253,11 @@ function ApprovalDetail({
           <span className="text-xs font-semibold text-primary">
             Approval Detail
           </span>
-          <Badge
-            variant={statusVariant(approval.status)}
-            className="text-[10px]"
+          <span
+            className={`${statusChip(approval.status)} rounded-full px-2 py-0.5 text-[10px]`}
           >
             {approval.status}
-          </Badge>
+          </span>
         </div>
         <div className="flex items-center gap-1">
           {approval.status === 'pending' && (
@@ -558,12 +555,11 @@ export default function ApprovalsPage() {
               {approvals.map((a) => (
                 <TableRow key={a.id} className="border-border text-xs">
                   <TableCell>
-                    <Badge
-                      variant={statusVariant(a.status)}
-                      className="text-[10px]"
+                    <span
+                      className={`${statusChip(a.status)} rounded-full px-2 py-0.5 text-[10px]`}
                     >
                       {a.status}
-                    </Badge>
+                    </span>
                   </TableCell>
                   <TableCell>
                     <button

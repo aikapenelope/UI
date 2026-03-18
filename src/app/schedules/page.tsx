@@ -62,20 +62,19 @@ function formatTs(epoch?: number | null): string {
   })
 }
 
-function runStatusVariant(
-  status: string
-): 'default' | 'secondary' | 'destructive' | 'outline' {
+function runStatusChip(status: string): string {
   switch (status) {
     case 'completed':
-      return 'default'
+      return 'chip-success'
     case 'running':
+      return 'chip-info'
     case 'pending':
-      return 'secondary'
+      return 'chip-warning'
     case 'failed':
     case 'error':
-      return 'destructive'
+      return 'chip-danger'
     default:
-      return 'outline'
+      return 'chip-neutral'
   }
 }
 
@@ -305,12 +304,11 @@ function RunsPanel({
               {runs.map((r) => (
                 <TableRow key={r.id} className="border-border text-xs">
                   <TableCell>
-                    <Badge
-                      variant={runStatusVariant(r.status)}
-                      className="text-[10px]"
+                    <span
+                      className={`${runStatusChip(r.status)} rounded-full px-2 py-0.5 text-[10px]`}
                     >
                       {r.status}
-                    </Badge>
+                    </span>
                   </TableCell>
                   <TableCell className="font-dmmono">{r.attempt}</TableCell>
                   <TableCell className="text-muted">
@@ -572,12 +570,11 @@ export default function SchedulesPage() {
                     {s.endpoint}
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant={s.enabled ? 'default' : 'secondary'}
-                      className="text-[10px]"
+                    <span
+                      className={`${s.enabled ? 'chip-success' : 'chip-neutral'} rounded-full px-2 py-0.5 text-[10px]`}
                     >
                       {s.enabled ? 'Active' : 'Paused'}
-                    </Badge>
+                    </span>
                   </TableCell>
                   <TableCell className="text-muted">
                     {formatTs(s.next_run_at)}
