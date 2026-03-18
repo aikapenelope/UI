@@ -157,10 +157,43 @@ export default function KnowledgeUploadDialog({
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 rounded-md border border-dashed border-border px-4 py-6 text-xs text-muted transition-colors hover:border-primary/40 hover:bg-accent"
+                onDragOver={(e) => {
+                  e.preventDefault()
+                  e.currentTarget.classList.add('drag-over')
+                }}
+                onDragLeave={(e) => {
+                  e.currentTarget.classList.remove('drag-over')
+                }}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  e.currentTarget.classList.remove('drag-over')
+                  const dropped = e.dataTransfer.files[0]
+                  if (dropped) setFile(dropped)
+                }}
+                className="drop-zone flex flex-col items-center gap-2 rounded-xl px-4 py-8"
               >
-                <Upload size={16} />
-                {file ? file.name : 'Click to select a file'}
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand/10 text-brand">
+                  <Upload size={18} />
+                </div>
+                {file ? (
+                  <div className="text-center">
+                    <p className="text-xs font-medium text-primary">
+                      {file.name}
+                    </p>
+                    <p className="text-[10px] text-muted">
+                      {(file.size / 1024).toFixed(1)} KB
+                    </p>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <p className="text-xs text-primary">
+                      Drop a file here or click to browse
+                    </p>
+                    <p className="text-[10px] text-muted">
+                      PDF, TXT, MD, CSV, JSON
+                    </p>
+                  </div>
+                )}
               </button>
             </div>
           )}

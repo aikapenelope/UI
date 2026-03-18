@@ -23,7 +23,9 @@ export default {
         accent: '#27272A',
         muted: '#A1A1AA',
         destructive: '#E53935',
-        positive: '#22C55E'
+        positive: '#22C55E',
+        info: '#3B82F6',
+        warning: '#F59E0B'
       },
       fontFamily: {
         geist: 'var(--font-geist-sans)',
@@ -31,6 +33,9 @@ export default {
       },
       borderRadius: {
         xl: '10px'
+      },
+      backdropBlur: {
+        glass: '12px'
       }
     }
   },
